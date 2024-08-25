@@ -1,0 +1,48 @@
+version: '3'
+
+services:
+
+  postgres:
+    image: postgres
+    container_name: postgres_container
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Admin@123  # Ensure this is set
+      POSTGRES_DB: courses
+    ports:
+      - "5432:5432"
+    networks:
+      - my-network
+
+  backend:
+    image: backend_imgage
+    container_name: backend_api
+    ports:
+     - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres_container:5432/courses
+      SPRING_DATASOURCE_USERNAME: postgres
+      SPRING_DATASOURCE_PASSWORD: Admin@123
+    depends_on:
+      - postgres
+    networks:
+      - my-network
+      
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: course-frontend
+    container_name: romantic_bell
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_API_URL=http://backend:8081
+    depends_on:
+      - backend
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    driver: bridge
